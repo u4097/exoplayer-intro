@@ -13,21 +13,20 @@
  * See the License for the specific language governing permissions and
 * limitations under the License.
  */
-package com.example.exoplayer;
+package com.example.exoplayer
 
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity
+import android.os.Bundle
 
 
 /**
  * A fullscreen activity to play audio or video streams.
  */
-public class PlayerActivity extends AppCompatActivity {
+class PlayerActivity : AppCompatActivity() {
 
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_player);
-  }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_player)
+    }
 
 }
