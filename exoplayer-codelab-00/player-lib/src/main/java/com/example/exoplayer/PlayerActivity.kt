@@ -82,6 +82,8 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun initializePlayer() {
         if (player == null) {
+            Log.d("EXOPLAYER","IS NULL - NOW IS INIT")
+
             player = ExoPlayerFactory.newSimpleInstance(
                     this,
                     DefaultRenderersFactory(this),
