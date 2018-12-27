@@ -19,6 +19,7 @@ import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.View
 import com.google.android.exoplayer2.DefaultRenderersFactory
 import com.google.android.exoplayer2.ExoPlayer
@@ -39,17 +40,17 @@ class PlayerActivity : AppCompatActivity() {
     private var player: ExoPlayer? = null
     private var playbackPosition: Long = 0
     private var currentWindow: Int = 0
-    var playWhenReady = true
+    private var playWhenReady = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_player)
-        initializePlayer()
     }
 
     override fun onStart() {
         super.onStart()
         if (Util.SDK_INT > 23) {
+            Log.d("EXOPLAYER INIT ","ON START")
             initializePlayer()
         }
     }
@@ -58,12 +59,14 @@ class PlayerActivity : AppCompatActivity() {
         super.onResume()
         hideSystemUi()
         if (Util.SDK_INT <= 23)
+            Log.d("EXOPLAYER INIT ","ON RESUME")
             initializePlayer()
     }
 
     override fun onPause() {
         super.onPause()
         if (Util.SDK_INT <= 23) {
+            Log.d("EXOPLAYER RELEASE ","ON PAUSE")
             releasePlayer()
         }
     }
@@ -71,9 +74,43 @@ class PlayerActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         if (Util.SDK_INT > 23) {
+            Log.d("EXOPLAYER RELEASE ","ON STOP")
             releasePlayer()
         }
     }
+
+
+    private fun initializePlayer() {
+        if (player == null) {
+            player = ExoPlayerFactory.newSimpleInstance(
+                    this,
+                    DefaultRenderersFactory(this),
+                    DefaultTrackSelector())
+            video_view.player = player
+            player?.playWhenReady = playWhenReady
+            player?.seekTo(currentWindow, playbackPosition)
+        }
+
+        val uri = Uri.parse(getString(R.string.media_url_mp3))
+        val mediaSource = buildMediaSource(uri)
+        player?.prepare(mediaSource, true, false)
+    }
+
+
+    private fun releasePlayer() {
+        if (this::player != null) {
+            playbackPosition = player?.currentPosition ?: 0L
+            currentWindow = player?.currentWindowIndex ?: 0
+            playWhenReady = player?.playWhenReady ?: false
+            player?.release()
+            player = null
+        }
+    }
+
+    private fun buildMediaSource(uri: Uri): MediaSource =
+            ExtractorMediaSource.Factory(
+                    DefaultHttpDataSourceFactory("exoplayer-codelab"))
+                    .createMediaSource(uri)
 
     @SuppressLint("InlinedApi")
     fun hideSystemUi() {
@@ -83,34 +120,5 @@ class PlayerActivity : AppCompatActivity() {
                 or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                 or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)
-    }
-
-    private fun initializePlayer() {
-        player = ExoPlayerFactory.newSimpleInstance(
-                this,
-                DefaultRenderersFactory(this),
-                DefaultTrackSelector())
-        video_view.player = player
-
-        player?.playWhenReady = playWhenReady
-        player?.seekTo(currentWindow, playbackPosition)
-
-        val uri = Uri.parse(getString(R.string.media_url_mp3))
-        val mediaSource = buildMediaSource(uri)
-        player?.prepare(mediaSource, true, false)
-    }
-
-    private fun buildMediaSource(uri: Uri): MediaSource {
-        return ExtractorMediaSource.Factory(
-                DefaultHttpDataSourceFactory("exoplayer-codelab"))
-                .createMediaSource(uri)
-    }
-
-    private fun releasePlayer() {
-            playbackPosition = player?.currentPosition ?: 0L
-            currentWindow = player?.currentWindowIndex ?: 0
-            playWhenReady = player?.playWhenReady ?: false
-            player?.release()
-            player = null
     }
 }
