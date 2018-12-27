@@ -36,10 +36,10 @@ import kotlinx.android.synthetic.main.activity_player.*
  */
 class PlayerActivity : AppCompatActivity() {
 
-    var player: ExoPlayer? = null
-    var playbackPosition: Long = 0
+    private var player: ExoPlayer? = null
+    private var playbackPosition: Long = 0
+    private var currentWindow: Int = 0
     var playWhenReady = true
-    var currentWindow: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,7 +57,7 @@ class PlayerActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         hideSystemUi()
-        if (Util.SDK_INT <= 23 || this::player == null)
+        if (Util.SDK_INT <= 23)
             initializePlayer()
     }
 
@@ -85,14 +85,13 @@ class PlayerActivity : AppCompatActivity() {
                 or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)
     }
 
-    fun initializePlayer() {
+    private fun initializePlayer() {
         player = ExoPlayerFactory.newSimpleInstance(
                 this,
                 DefaultRenderersFactory(this),
                 DefaultTrackSelector())
         video_view.player = player
 
-        player?.playWhenReady
         player?.playWhenReady = playWhenReady
         player?.seekTo(currentWindow, playbackPosition)
 
@@ -101,21 +100,17 @@ class PlayerActivity : AppCompatActivity() {
         player?.prepare(mediaSource, true, false)
     }
 
-    fun buildMediaSource(uri: Uri): MediaSource {
+    private fun buildMediaSource(uri: Uri): MediaSource {
         return ExtractorMediaSource.Factory(
                 DefaultHttpDataSourceFactory("exoplayer-codelab"))
                 .createMediaSource(uri)
-
-
     }
 
-    fun releasePlayer() {
-        if (this::player != null) {
+    private fun releasePlayer() {
             playbackPosition = player?.currentPosition ?: 0L
             currentWindow = player?.currentWindowIndex ?: 0
             playWhenReady = player?.playWhenReady ?: false
             player?.release()
             player = null
-        }
     }
 }
